@@ -7,7 +7,9 @@ use App\Events\PostCreatedForListener;
 use App\Jobs\SendEmails;
 use App\Mail\PostCreated;
 use App\Models\Post;
+use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -16,6 +18,34 @@ class PostsController extends Controller
     public function get($id)
     {
         $post = Post::findOrFail($id);
+
+        return response()->json($post);
+    }
+
+    public function getWithCache($id)
+    {
+        $cacheKey = 'posts' . $id;
+        $post = Cache::get($cacheKey, function () use ($id, $cacheKey) {
+            $post = Post::findOrFail($id);
+
+            Cache::put($cacheKey, $post, CarbonInterval::minute(15));
+
+            return $post;
+        });
+
+        return response()->json($post);
+    }
+
+    public function getWithTagCache($id)
+    {
+        $post = Cache::tags('posts')
+            ->get($id, function () use ($id){
+                $post = Post::findOrFail($id);
+
+                Cache::tags('posts')->put($id, $post, CarbonInterval::minute(15));
+
+                return $post;
+            });
 
         return response()->json($post);
     }
