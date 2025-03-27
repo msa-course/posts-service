@@ -16,7 +16,7 @@ class Post extends Model
 {
     protected $table = 'posts';
 
-    protected $fillable = ['title', 'text'];
+    protected $fillable = ['writer_id', 'title', 'text'];
 
     public function writer(): BelongsTo
     {
