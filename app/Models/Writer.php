@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Factories\WriterFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
@@ -47,5 +48,10 @@ class Writer extends Model
     public function scopeActive(Builder $query): void
     {
         $query->where('active', true);
+    }
+
+    public static function factory(): WriterFactory
+    {
+        return WriterFactory::new();
     }
 }

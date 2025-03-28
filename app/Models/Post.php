@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Factories\PostFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -21,5 +22,10 @@ class Post extends Model
     public function writer(): BelongsTo
     {
         return $this->belongsTo(Writer::class, 'writer_id');
+    }
+
+    public static function factory(): PostFactory
+    {
+        return PostFactory::new();
     }
 }
