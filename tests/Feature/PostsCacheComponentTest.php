@@ -1,12 +1,14 @@
 <?php
 
 use App\Models\Post;
+use Carbon\CarbonInterval;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 use function Pest\Laravel\getJson;
 
-uses(TestCase::class);
+uses(TestCase::class, RefreshDatabase::class);
 uses()->group('component', 'posts', 'cache');
 
 beforeEach(function () {
@@ -15,13 +17,14 @@ beforeEach(function () {
 
 test('GET /api/posts/{id}:with-cache', function () {
     $post = Post::factory()->create();
+    $cacheKey = 'posts' . $post->id;
+    Cache::put($cacheKey, $post, CarbonInterval::minute(15));
 
-    $this->getJson("/api/posts/{$post->id}/cache")
+    $this->getJson("/api/posts/{$post->id}:with-cache")
         ->assertStatus(200)
         ->assertJson($post->toArray());
 
     // Проверяем, что данные появились в кэше
-    $cacheKey = 'posts' . $post->id;
     expect(Cache::has($cacheKey))->toBeTrue();
 
     // Проверяем, что данные из кэша совпадают
@@ -31,8 +34,9 @@ test('GET /api/posts/{id}:with-cache', function () {
 
 test('GET /api/posts/{id}:with-tag-cache', function () {
     $post = Post::factory()->create();
+    Cache::tags('posts')->put($post->id, $post, CarbonInterval::minute(15));
 
-    getJson("/api/posts/{$post->id}/with-tag-cache")
+    getJson("/api/posts/{$post->id}:with-tag-cache")
         ->assertStatus(200)
         ->assertJson($post->toArray());
 

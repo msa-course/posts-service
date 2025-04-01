@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\Post;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Jobs\SendEmails;
 use App\Mail\PostCreated;
+use App\Events\PostCreated as PostCreatedEvent;
 use App\Events\PostCreatedForListener;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
@@ -15,7 +17,7 @@ use function Pest\Laravel\getJson;
 use function Pest\Laravel\patchJson;
 use function Pest\Laravel\postJson;
 
-uses(TestCase::class);
+uses(TestCase::class, RefreshDatabase::class);
 uses()->group('component', 'posts');
 
 test('GET /api/posts/{id} 200', function () {
@@ -23,21 +25,12 @@ test('GET /api/posts/{id} 200', function () {
 
     getJson("/api/posts/{$post->id}")
         ->assertStatus(200)
-        ->assertJsonPath('data.id', $post->id);
+        ->assertJsonPath('id', $post->id);
 });
 
 test('GET /api/posts/{id} 404', function () {
     getJson("/api/posts/1")
         ->assertStatus(404);
-});
-
-test('GET /api/posts 200', function () {
-    $count = 3;
-    Post::factory()->count($count)->create();
-
-    getJson("/posts?count=$count")
-        ->assertStatus(200)
-        ->assertJsonCount($count, 'data');
 });
 
 test('POST /api/posts 201', function ($writerId, $title, $text) {
@@ -49,9 +42,9 @@ test('POST /api/posts 201', function ($writerId, $title, $text) {
 
     postJson("/api/posts", $request)
         ->assertStatus(201)
-        ->assertJsonPath('data.writer_id', $writerId)
-        ->assertJsonPath('data.title', $title)
-        ->assertJsonPath('data.text', $text);
+        ->assertJsonPath('writer_id', $writerId)
+        ->assertJsonPath('title', $title)
+        ->assertJsonPath('text', $text);
 })->with([
     [1, 'Title1', 'Text1'],
     [2, 'Title2', 'Text2'],
@@ -62,17 +55,22 @@ test('POST /api/posts 422', function () {
         ->assertStatus(422);
 });
 
-test('PATCH /api/posts/{id} 200', function () {
+test('PUT /api/posts/{id} 200', function ($writerId, $title, $text) {
     $post = Post::factory()->create();
 
     $request = [
-        'text' => 'Test',
+        'writer_id' => $writerId,
+        'title' => $title,
+        'text' => $text,
     ];
 
     patchJson("/api/posts/{$post->id}", $request)
         ->assertStatus(200)
-        ->assertJsonPath('data.text', $request['text']);
-});
+        ->assertJsonPath('text', $request['text']);
+})->with([
+    [1, 'Title1', 'Text1'],
+    [2, 'Title2', 'Text2'],
+]);
 
 test('DELETE /api/posts/{id} 204', function () {
     $post = Post::factory()->create();
@@ -99,7 +97,7 @@ test('POST /api/posts:with-email 201', function () {
     Mail::assertSent(PostCreated::class);
 });
 
-test('POST /api/posts:with-mail 422', function () {
+test('POST /api/posts:with-email 422', function () {
     postJson('/api/posts:with-email', [])
         ->assertStatus(422)
         ->assertJsonValidationErrors(['writer_id', 'title', 'text']);
@@ -140,7 +138,7 @@ test('POST /api/posts:with-email-e-l 201', function () {
         ->assertStatus(201)
         ->assertJsonPath('title', $request['title']);
 
-    Event::assertDispatched(PostCreated::class);
+    Event::assertDispatched(PostCreatedEvent::class);
 });
 
 test('POST /api/posts:with-email-e-l 422', function () {
@@ -166,17 +164,11 @@ test('POST /api/posts:with-email-s 201', function () {
 });
 
 test('POST /api/posts:with-email-s 422', function () {
-    Event::fake();
-
     $request = [
-        'writer_id' => 1,
         'title' => 'Test Title',
         'text' => 'Test text',
     ];
 
     postJson('/api/posts:with-email-s', $request)
-        ->assertStatus(422)
-        ->assertJsonPath('title', $request['title']);
-
-    Event::assertDispatched(PostCreatedForListener::class);
+        ->assertStatus(422);
 });

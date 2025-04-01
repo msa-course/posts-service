@@ -13,7 +13,7 @@ class PostFactory extends Factory
         return [
             'writer_id' => $this->faker->randomNumber(),
             'title' => $this->faker->title(),
-            'body' => $this->faker->text(),
+            'text' => $this->faker->text(),
         ];
     }
 }

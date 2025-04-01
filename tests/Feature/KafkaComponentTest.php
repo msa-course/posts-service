@@ -2,15 +2,18 @@
 
 use App\Http\Controllers\KafkaController;
 use App\Services\KafkaProducerService;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\postJson;
 
-uses(TestCase::class);
+uses(TestCase::class, RefreshDatabase::class);
 uses()->group('component', 'kafka');
 
 beforeEach(function () {
+    Event::fake(false);
     Route::post('/api/send-kafka-message', [KafkaController::class, 'sendMessage']);
 });
 
