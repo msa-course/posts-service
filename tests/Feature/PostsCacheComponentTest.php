@@ -17,7 +17,6 @@ beforeEach(function () {
 test('GET /api/posts/{id}:with-cache', function () {
     $post = Post::factory()->create();
     $cacheKey = 'posts' . $post->id;
-    Cache::put($cacheKey, $post, CarbonInterval::minute(15));
 
     $this->getJson("/api/posts/{$post->id}:with-cache")
         ->assertStatus(200)
@@ -33,7 +32,6 @@ test('GET /api/posts/{id}:with-cache', function () {
 
 test('GET /api/posts/{id}:with-tag-cache', function () {
     $post = Post::factory()->create();
-    Cache::tags('posts')->put($post->id, $post, CarbonInterval::minute(15));
 
     getJson("/api/posts/{$post->id}:with-tag-cache")
         ->assertStatus(200)

@@ -55,7 +55,7 @@ test('POST /api/posts 422', function () {
         ->assertStatus(422);
 });
 
-test('PUT /api/posts/{id} 200', function ($writerId, $title, $text) {
+test('PATCH /api/posts/{id} 200', function ($writerId, $title, $text) {
     $post = Post::factory()->create();
 
     $request = [

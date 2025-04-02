@@ -12,7 +12,7 @@ class PostFactory extends Factory
     public function definition(): array {
         return [
             'writer_id' => $this->faker->randomNumber(),
-            'title' => $this->faker->title(),
+            'title' => $this->faker->sentence(),
             'text' => $this->faker->text(),
         ];
     }
