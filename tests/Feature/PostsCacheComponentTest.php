@@ -2,13 +2,12 @@
 
 use App\Models\Post;
 use Carbon\CarbonInterval;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 use function Pest\Laravel\getJson;
 
-uses(TestCase::class, RefreshDatabase::class);
+uses(TestCase::class);
 uses()->group('component', 'posts', 'cache');
 
 beforeEach(function () {
