@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Post;
-use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 

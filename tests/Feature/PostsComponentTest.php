@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\assertDatabaseMissing;
+use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\patchJson;
@@ -25,7 +26,11 @@ test('GET /api/posts/{id} 200', function () {
 
     getJson("/api/posts/{$post->id}")
         ->assertStatus(200)
-        ->assertJsonPath('id', $post->id);
+        ->assertJsonPath('id', $post->id)
+        ->assertJsonPath('title', $post->title)
+        ->assertJsonPath('text', $post->text);
+
+    assertDatabaseHas(Post::class, ['id' => $post->id]);
 });
 
 test('GET /api/posts/{id} 404', function () {
@@ -78,7 +83,7 @@ test('DELETE /api/posts/{id} 204', function () {
     deleteJson("/api/posts/{$post->id}")
         ->assertStatus(204);
 
-    assertDatabaseMissing('posts', ['id' => $post->id]);
+    assertDatabaseMissing(Post::class, ['id' => $post->id]);
 });
 
 test('POST /api/posts:with-email 201', function () {
